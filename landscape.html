@@ -1,0 +1,1417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive 2x2 Framework</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .header h1 {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-size: 2.2rem;
+            margin: 0;
+            font-weight: 700;
+        }
+        
+        .framework-container {
+            position: relative;
+            width: 900px;
+            height: 700px;
+            margin: 0 auto;
+            border: 3px solid #333;
+            border-radius: 15px;
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+        }
+        
+        .axis-labels {
+            position: absolute;
+            font-weight: 600;
+            color: #495057;
+            font-size: 1rem;
+        }
+        
+        .x-axis-bottom {
+            bottom: -30px;
+            left: 50%;
+            text-align: center;
+            transform: translateX(-50%);
+        }
+        
+        .y-axis-left {
+            top: 50%;
+            left: -30px;
+            writing-mode: vertical-rl;
+            text-orientation: mixed;
+            text-align: center;
+            transform: translateY(-50%) rotate(180deg);
+        }
+        
+        .grid-lines {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .center-line-v {
+            position: absolute;
+            left: 50%;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: #333;
+            transform: translateX(-50%);
+        }
+        
+        .center-line-h {
+            position: absolute;
+            top: 50%;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #333;
+            transform: translateY(-50%);
+        }
+        
+        .quadrant-labels {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        
+        .quad-label {
+            position: absolute;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #666;
+            text-align: center;
+            background: rgba(255,255,255,0.8);
+            padding: 5px 10px;
+            border-radius: 8px;
+        }
+        
+        .quad-1 { top: 20px; left: 20px; }
+        .quad-2 { top: 20px; right: 20px; }
+        .quad-3 { bottom: 20px; left: 20px; }
+        .quad-4 { bottom: 20px; right: 20px; }
+        
+        .company {
+            position: absolute;
+            background: white;
+            border: 2px solid #ccc;
+            border-radius: 50%;
+            padding: 8px 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: move;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            text-align: center;
+            user-select: none;
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .company:hover {
+            transform: scale(1.05);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.25);
+            z-index: 20;
+        }
+        
+        .company.selected {
+            transform: scale(1.1);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.3);
+            z-index: 30;
+        }
+        
+        .company-name {
+            font-weight: 600;
+            line-height: 1.1;
+        }
+        
+        .company-valuation {
+            font-size: 0.65em;
+            font-weight: 500;
+            color: #666;
+            margin-top: 2px;
+            line-height: 1;
+        }
+        
+        .domain-life-sciences-biotech { border-color: #e91e63; color: #e91e63; }
+        .domain-materials-chemistry { border-color: #4caf50; color: #4caf50; }
+        .domain-mechanical-multiphysics { border-color: #2196f3; color: #2196f3; }
+        .domain-manufacturing-industrial { border-color: #ff9800; color: #ff9800; }
+        .domain-electrical-electronics { border-color: #795548; color: #795548; }
+        .domain-computing-simulation-infra { border-color: #607d8b; color: #607d8b; }
+        .domain-cross-domain-platform { border-color: #9c27b0; color: #9c27b0; }
+
+        .tag-life-sciences-biotech { background: #ffebee; color: #c62828; }
+        .tag-materials-chemistry { background: #e8f5e8; color: #2e7d32; }
+        .tag-mechanical-multiphysics { background: #e3f2fd; color: #1565c0; }
+        .tag-manufacturing-industrial { background: #fff3e0; color: #ef6c00; }
+        .tag-electrical-electronics { background: #efebe9; color: #5d4037; }
+        .tag-computing-simulation-infra { background: #eceff1; color: #455a64; }
+        .tag-cross-domain-platform { background: #f3e5f5; color: #7b1fa2; }
+                        
+        .info-panel {
+            position: fixed;
+            top: 50%;
+            right: -400px;
+            transform: translateY(-50%);
+            width: 350px;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.3);
+            padding: 25px;
+            transition: right 0.3s ease;
+            z-index: 1000;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .info-panel.visible {
+            right: 20px;
+        }
+        
+        .info-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 15px;
+        }
+        
+        .info-title {
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #333;
+        }
+        
+        .close-btn {
+            background: #ff5722;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 30px;
+            height: 30px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .info-section {
+            margin-bottom: 20px;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 5px;
+        }
+        
+        .info-value {
+            color: #333;
+            font-size: 1rem;
+            margin-bottom: 10px;
+        }
+        
+        .score-scale {
+            width: 100%;
+            height: 40px;
+            position: relative;
+            margin: 10px 0;
+            display: flex;
+            align-items: center;
+        }
+
+        .scale-line {
+            width: 100%;
+            height: 2px;
+            background: #ddd;
+            position: relative;
+        }
+
+        .scale-tick {
+            position: absolute;
+            width: 2px;
+            height: 12px;
+            background: #666;
+            top: -5px;
+        }
+
+        .scale-indicator {
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            background: linear-gradient(90deg, #667eea, #764ba2);
+            border-radius: 50%;
+            top: -7px;
+            transition: left 0.3s ease;
+            border: 2px solid white;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.2);
+        }
+
+        .scale-labels {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.7rem;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .domain-tags {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+        }
+        
+        .domain-tag {
+            padding: 4px 8px;
+            border-radius: 6px;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+        
+        .funding-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            margin-top: 10px;
+        }
+        
+        .funding-item {
+            text-align: center;
+            padding: 8px;
+            background: #f8f9fa;
+            border-radius: 6px;
+        }
+        
+        .funding-amount {
+            font-weight: 700;
+            color: #28a745;
+            font-size: 1.1rem;
+        }
+        
+        .website-link {
+            color: #007bff;
+            text-decoration: none;
+            font-weight: 500;
+        }
+        
+        .website-link:hover {
+            text-decoration: underline;
+        }
+        
+        .legend {
+            position: absolute;
+            bottom: 60px;
+            right: 30px;
+            background: white;
+            border-radius: 8px;
+            padding: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            z-index: 60;
+            transform: translateY(100%);
+            opacity: 0;
+            transition: all 0.3s ease;
+            pointer-events: none;
+        }
+        
+        .legend button {
+            display: none !important;
+        }
+        
+        .legend .close-btn {
+            display: none !important;
+        }
+        
+        .info-panel button:not(.close-btn) {
+            display: none !important;
+        }
+        
+        .info-panel .legend-btn {
+            display: none !important;
+        }
+        
+        .legend.visible {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .legend-overlay {
+            display: none;
+        }
+        
+        .legend-btn {
+            position: absolute;
+            bottom: 70px;
+            right: 30px;
+            background: #667eea;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 8px 12px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            font-size: 0.8rem;
+            z-index: 50;
+        }
+        
+        .legend-btn:hover {
+            background: #5a6fd8;
+        }
+        
+        .legend-title {
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 0.9rem;
+            text-align: center;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin: 6px 0;
+            font-size: 0.8rem;
+            position: relative;
+        }
+        
+        .legend-color {
+            width: 14px;
+            height: 14px;
+            border-radius: 2px;
+            border: 2px solid;
+        }
+        
+        .info-icon {
+            width: 16px;
+            height: 16px;
+            border-radius: 50%;
+            background: #667eea;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+            cursor: pointer;
+            margin-left: auto;
+            transition: background-color 0.2s ease;
+        }
+        
+        .info-icon:hover {
+            background: #5a6fd8;
+        }
+        
+        .info-tooltip {
+            position: absolute;
+            left: 100%;
+            top: 50%;
+            transform: translateY(-50%);
+            background: white;
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            padding: 10px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            width: 250px;
+            font-size: 0.75rem;
+            line-height: 1.4;
+            z-index: 1000;
+            opacity: 0;
+            visibility: hidden;
+            transition: all 0.2s ease;
+            margin-left: 10px;
+        }
+        
+        .info-tooltip.visible {
+            opacity: 1;
+            visibility: visible;
+        }
+        
+        .info-tooltip::before {
+            content: '';
+            position: absolute;
+            left: -6px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 0;
+            height: 0;
+            border-top: 6px solid transparent;
+            border-bottom: 6px solid transparent;
+            border-right: 6px solid white;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Physics-Aware AI in Science & Engineering</h1>
+            <p style="color: #666; margin: 10px 0;">Algorithm/Code First Focus ↕ Data First Focus × Research-Heavy ↔ Tech-Agnostic</p>
+        </div>
+        
+        <div class="framework-container" id="framework">
+            <!-- Axis Labels -->
+            <div class="axis-labels x-axis-bottom">Research-Heavy ← → Tech-Agnostic</div>
+            <div class="axis-labels y-axis-left">Algorithm/Code First ← → Data First</div>
+            
+            <!-- Grid Lines -->
+            <div class="grid-lines">
+                <div class="center-line-v"></div>
+                <div class="center-line-h"></div>
+            </div>
+            
+            <!-- Quadrant Labels -->
+            <div class="quadrant-labels">
+                <div class="quad-label quad-1">Novel Algorithms<br>& Proprietary Solvers</div>
+                <div class="quad-label quad-2">Algorithm Platforms<br>& Orchestration</div>
+                <div class="quad-label quad-3">Proprietary Datasets<br>& Domain Knowledge</div>
+                <div class="quad-label quad-4">Data Platforms<br>& Collaboration</div>
+            </div>
+            
+            <!-- Legend Button -->
+            <button class="legend-btn" onclick="showLegend()">Legend</button>
+        </div>
+    </div>
+    
+    <!-- Info Panel -->
+    <div class="info-panel" id="infoPanel">
+        <div class="info-header">
+            <div class="info-title" id="infoTitle">Company Details</div>
+            <button class="close-btn" onclick="closeInfoPanel()">×</button>
+        </div>
+        
+        <div class="info-section">
+            <div class="info-label">Description</div>
+            <div class="info-value" id="infoDescription">Select a company to view details</div>
+        </div>
+        
+        <div class="info-section">
+            <div class="info-label">Website</div>
+            <div class="info-value">
+                <a href="#" id="infoWebsite" class="website-link" target="_blank">-</a>
+            </div>
+        </div>
+        
+        <!-- Tech Strategy Score -->
+        <div class="info-section">
+            <div class="info-label">Tech Strategy Score (1=Research-Heavy, 10=Platform)</div>
+            <div class="score-scale">
+                <div class="scale-line">
+                    <!-- Ticks for positions 1-10 -->
+                    <div class="scale-tick" style="left: 0%;"></div>
+                    <div class="scale-tick" style="left: 11.11%;"></div>
+                    <div class="scale-tick" style="left: 22.22%;"></div>
+                    <div class="scale-tick" style="left: 33.33%;"></div>
+                    <div class="scale-tick" style="left: 44.44%;"></div>
+                    <div class="scale-tick" style="left: 55.56%;"></div>
+                    <div class="scale-tick" style="left: 66.67%;"></div>
+                    <div class="scale-tick" style="left: 77.78%;"></div>
+                    <div class="scale-tick" style="left: 88.89%;"></div>
+                    <div class="scale-tick" style="left: 100%;"></div>
+                    <!-- Indicator circle -->
+                    <div class="scale-indicator" id="techIndicator"></div>
+                </div>
+            </div>
+            <div class="scale-labels">
+                <span>Research-Heavy</span>
+                <span>Platform</span>
+            </div>
+        </div>
+
+        <!-- Focus Score -->
+        <div class="info-section">
+            <div class="info-label">Focus Score (1=Algorithm, 10=Data)</div>
+            <div class="score-scale">
+                <div class="scale-line">
+                    <div class="scale-tick" style="left: 0%;"></div>
+                    <div class="scale-tick" style="left: 11.11%;"></div>
+                    <div class="scale-tick" style="left: 22.22%;"></div>
+                    <div class="scale-tick" style="left: 33.33%;"></div>
+                    <div class="scale-tick" style="left: 44.44%;"></div>
+                    <div class="scale-tick" style="left: 55.56%;"></div>
+                    <div class="scale-tick" style="left: 66.67%;"></div>
+                    <div class="scale-tick" style="left: 77.78%;"></div>
+                    <div class="scale-tick" style="left: 88.89%;"></div>
+                    <div class="scale-tick" style="left: 100%;"></div>
+                    <div class="scale-indicator" id="focusIndicator"></div>
+                </div>
+            </div>
+            <div class="scale-labels">
+                <span>Algorithm</span>
+                <span>Data</span>
+            </div>
+        </div>
+        
+        <div class="info-section">
+            <div class="info-label">Domain Tags</div>
+            <div class="domain-tags" id="infoDomains">-</div>
+        </div>
+        
+        <div class="info-section">
+            <div class="info-label">Funding Information</div>
+            <div class="funding-grid">
+                <div class="funding-item">
+                    <div class="funding-amount" id="totalRaised">-</div>
+                    <div style="font-size: 0.8rem; color: #666;">Total Raised</div>
+                </div>
+                <div class="funding-item">
+                    <div class="funding-amount" id="lastRound">-</div>
+                    <div style="font-size: 0.8rem; color: #666;">Last Round</div>
+                </div>
+                <div class="funding-item">
+                    <div class="funding-amount" id="valuation">-</div>
+                    <div style="font-size: 0.8rem; color: #666;">Valuation</div>
+                </div>
+                <div class="funding-item">
+                    <div style="font-size: 0.9rem; color: #333;" id="investors">-</div>
+                    <div style="font-size: 0.8rem; color: #666;">Key Investors</div>
+                </div>
+            </div>
+            
+        </div>
+        
+        <!-- Legend Button -->
+        <div style="text-align: center; margin-top: 20px;">
+            <button class="legend-btn" onclick="showLegend()">Domain Legend</button>
+        </div>
+    </div>
+    
+    <!-- Legend Overlay and Popup -->
+    <div class="legend-overlay" id="legendOverlay" onclick="hideLegend()"></div>
+    <div class="legend" id="legendPopup">
+        <button class="legend-close" onclick="hideLegend()">×</button>
+        <div class="legend-title">Domain Legend</div>
+        <div class="legend-item">
+            <div class="legend-color" style="border-color: #e91e63;"></div>
+            <span>Life Sciences & Biotech</span>
+            <span class="info-icon" onclick="showTooltip('LifeSciencesBiotech')">i</span>
+            <div class="info-tooltip" id="lifesciencesbiotechTooltip">
+                <strong>Life Sciences & Biotech</strong><br>
+                Companies focused on biology, drug discovery, medical simulation, protein folding, etc.
+            </div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="border-color: #4caf50;"></div>
+            <span>Materials & Chemistry</span>
+            <span class="info-icon" onclick="showTooltip('MaterialsChemistry')">i</span>
+            <div class="info-tooltip" id="materialschemistryTooltip">
+                <strong>Materials & Chemistry</strong><br>
+                Modeling, simulation, or design of materials, molecules, chemical processes.
+            </div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="border-color: #2196f3;"></div>
+            <span>Mechanical & Multiphysics</span>
+            <span class="info-icon" onclick="showTooltip('MechanicalMultiphysics')">i</span>
+            <div class="info-tooltip" id="mechanicalmultiphysicsTooltip">
+                <strong>Mechanical & Multiphysics</strong><br>
+                Tools for structural, thermal, fluid, and multi-physics simulation — including CAD, FEA, CFD, digital twins.
+            </div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="border-color: #ff9800;"></div>
+            <span>Manufacturing & Industrial</span>
+            <span class="info-icon" onclick="showTooltip('ManufacturingIndustrial')">i</span>
+            <div class="info-tooltip" id="manufacturingindustrialTooltip">
+                <strong>Manufacturing & Industrial</strong><br>
+                Covers factory automation, robotics, CAM, process optimization, predictive maintenance, and production-scale digital twins.
+            </div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="border-color: #795548;"></div>
+            <span>Electrical & Electronics</span>
+            <span class="info-icon" onclick="showTooltip('ElectricalElectronics')">i</span>
+            <div class="info-tooltip" id="electricalelectronicsTooltip">
+                <strong>Electrical & Electronics</strong><br>
+                PCB/EDA design, circuit simulation, firmware workflows, and hardware-software co-design tools.
+            </div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="border-color: #607d8b;"></div>
+            <span>Computing & Simulation Infra</span>
+            <span class="info-icon" onclick="showTooltip('ComputingSimulationInfra')">i</span>
+            <div class="info-tooltip" id="computingsimulationinfraTooltip">
+                <strong>Computing & Simulation Infra</strong><br>
+                Simulation platforms, cloud HPC, solvers, compilers, surrogate modeling infrastructure.
+            </div>
+        </div>
+        <div class="legend-item">
+            <div class="legend-color" style="border-color: #9c27b0;"></div>
+            <span>Cross-Domain / Platform</span>
+            <span class="info-icon" onclick="showTooltip('CrossDomainPlatform')">i</span>
+            <div class="info-tooltip" id="crossdomainplatformTooltip">
+                <strong>Cross-Domain / Platform</strong><br>
+                General-purpose modeling tools, collaboration platforms, supply chain design tools, or companies that span multiple physical domains.
+            </div>
+        </div>
+    </div>
+
+
+
+    <script>
+
+        const domainMap = {
+            'LSB': 'Life Sciences & Biotech',
+            'MC': 'Materials & Chemistry', 
+            'MM': 'Mechanical & Multiphysics',
+            'MI': 'Manufacturing & Industrial',
+            'EE': 'Electrical & Electronics',
+            'CSI': 'Computing & Simulation Infra',
+            'CDP': 'Cross-Domain / Platform'
+        };
+
+        // Helper function to convert short codes to full names
+        function expandDomains(shortCodes) {
+            return shortCodes.map(code => domainMap[code]);
+        }
+
+        // Helper function to convert full names to CSS classes
+        function domainToCSS(fullName) {
+            return fullName.toLowerCase()
+                .replace(/[^a-z0-9]/g, '-')
+                .replace(/-+/g, '-');
+        }
+
+        const companies = [
+        {
+        name: "PhysicsX",
+        description: "AI-driven platform empowering engineers with real-time multiphysics simulations, accelerating product design, manufacturing, and operations.",
+        website: "https://physicsx.ai",
+        techScore: 6,
+        focusScore: 7,
+        domains: ['MM', 'MI', 'CSI', 'CDP'],
+        totalRaised: 170.0,
+        lastRound: 135.0,
+        valuation: 1000.0,
+        investors: ['Atomico (lead)', 'Temasek', 'Siemens', 'Applied Materials', 'July Fund', 'General Catalyst', 'NGP', 'Radius Capital', 'Standard Investments', 'Allen & Co']
+    },
+    {
+        name: "Neural Concept",
+        description: "Develops 3D deep learning algorithms for industrial engineering, speeding R&D cycles and transforming product design with their platform Neural Concept Shape.",
+        website: "https://neuralconcept.com",
+        techScore: 4,
+        focusScore: 5,
+        domains: ['MM', 'MI', 'CDP', 'CSI'],
+        totalRaised: 15.8,
+        lastRound: 9.1,
+        valuation: null,
+        investors: ['Constantia New Business', 'Alven Capital', 'High-Tech Gründerfonds', 'Verve Ventures', 'Aster', 'CNB Capital']
+    },
+    {
+        name: "Godela.ai",
+        description: "AI-native physics engine offering instant, simulation-quality answers to complex engineering problems; enables engineers to query and model with CAD files or data.",
+        website: "https://godela.ai",
+        techScore: 3,
+        focusScore: 4,
+        domains: ['MM', 'MI', 'CDP', 'CSI'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    },
+    {
+        name: "BeyondMath",
+        description: "AI-driven simulation software for fluid dynamics, electromagnetics, and physics; delivers design assessment and optimization without prototypes, used by F1 teams.",
+        website: "https://beyondmath.com",
+        techScore: 3,
+        focusScore: 5,
+        domains: ['MM', 'MI', 'CDP'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    },
+    {
+        name: "Adaptive Simulations",
+        description: "Provides fully automated, cloud-based flow simulations and design optimization using adaptive algorithms, making CAE accessible for all levels.",
+        website: "https://ingridcloud.com",
+        techScore: 5,
+        focusScore: 6,
+        domains: ['MM', 'MI', 'CSI'],
+        totalRaised: 2.4,
+        lastRound: null,
+        valuation: null,
+        investors: ['Karma Ventures', 'Creathor Ventures', 'KTH Holding', 'European Innovation Council Fund']
+    },
+    {
+        name: "Navier AI",
+        description: "ML-based CFD solver delivering fluid dynamics simulations 1,000x faster than traditional tools; enables real-time engineering design iterations.",
+        website: "https://https://navier.ai/",
+        techScore: 2,
+        focusScore: 5,
+        domains: ['MM', 'MI', 'CSI'],
+        totalRaised: 7.8,
+        lastRound: 7.8,
+        valuation: null,
+        investors: ['Serra Ventures', 'Shakti', 'E14 Fund', 'Ahren Innovation Capital']
+    },
+    {
+        name: "Monolith AI",
+        description: "Empowers engineers to use AI for complex physics problems, cutting product development cycle times and delivering AI-driven insights from engineering data.",
+        website: "https://https://www.monolithai.com/",
+        techScore: 4,
+        focusScore: 5,
+        domains: ['MM', 'MI', 'CSI', 'CDP'],
+        totalRaised: 20.9,
+        lastRound: 10.3,
+        valuation: null,
+        investors: ['Insight Partners', 'Pentech Ventures', 'Touchstone Innovations', 'SuperSeed Ventures']
+    },
+    {
+        name: "KronosAI",
+        description: "Develops AI solutions and foundation models for accelerating and enabling high-fidelity physics and inverse design in engineering simulations.",
+        website: "https://https://kronosai.co/",
+        techScore: 2,
+        focusScore: 3,
+        domains: ['CSI', 'CDP', 'MI'],
+        totalRaised: 1.5,
+        lastRound: 1.5,
+        valuation: null,
+        investors: ['Y Combinator', 'N/A']
+    },
+    {
+        name: "nTop",
+        description: "Advanced computational design software fusing geometry and physics, enabling rapid and validated design of complex, high-performance products.",
+        website: "https://https://www.ntop.com/",
+        techScore: 7,
+        focusScore: 6,
+        domains: ['MM', 'MI', 'CDP'],
+        totalRaised: 33.5,
+        lastRound: 20.0,
+        valuation: null,
+        investors: ['Insight Partners', 'Canaan', 'DCVC', 'Haystack', 'Root Ventures']
+    },
+    {
+        name: "HIDDEN-AI",
+        description: "Security platform helping enterprises protect their AI/machine learning models from attacks, without requiring access to raw data or algorithms.",
+        website: "https://https://www.invo.northwestern.edu/technologies/startups/hidden-ai.html",
+        techScore: 3,
+        focusScore: 4,
+        domains: ['CSI', 'CDP'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    },
+    {
+        name: "Orbital Materials",
+        description: "AI-powered platform for discovering materials and climate technologies, focusing on clean energy and environmental sustainability.",
+        website: "https://https://www.orbitalmaterials.com/",
+        techScore: 2,
+        focusScore: 8,
+        domains: ['MC', 'LSB', 'MI'],
+        totalRaised: 7.7,
+        lastRound: 4.3,
+        valuation: null,
+        investors: ['Breakout Ventures', 'Entreé Capital', 'Coastal Ventures']
+    },
+    {
+        name: "Adam CAD",
+        description: "AI-powered CAD co-pilot transforming natural language and images into parametric 3D models, streamlining engineering design workflows.",
+        website: "https://https://www.adamcad.com",
+        techScore: 6,
+        focusScore: 5,
+        domains: ['MM', 'MI', 'CSI'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    },
+    {
+        name: "Jua",
+        description: "Building a universal physics simulator—uses deep learning and weather modeling for applications like energy trading and environmental forecasting.",
+        website: "https://https://www.jua.ai",
+        techScore: 3,
+        focusScore: 7,
+        domains: ['MM', 'MC', 'LSB', 'CDP'],
+        totalRaised: 6.0,
+        lastRound: 6.0,
+        valuation: null,
+        investors: ['Y Combinator', 'Harvard Innovation Labs']
+    },
+    {
+        name: "Digilab Solutions",
+        description: "Provides Office 365, Azure, and Microsoft-based consulting, development, and project management services, with international expertise.",
+        website: "https://https://www.digilab.co.uk",
+        techScore: 9,
+        focusScore: 8,
+        domains: ['CSI', 'CDP'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    },
+    {
+        name: "Rescale",
+        description: "Delivers high-performance computing as-a-service, simplifying complex simulation and optimization for engineering and scientific R&D.",
+        website: "https://https://www.rescale.com",
+        techScore: 8,
+        focusScore: 7,
+        domains: ['CSI', 'CDP', 'MI'],
+        totalRaised: null,
+        lastRound: 100.0,
+        valuation: 1300.0,
+        investors: ['T. Rowe Price', 'Bessemer Venture Partners', 'DENSO', 'Founders Fund']
+    },
+    {
+        name: "Algoryx Simulation",
+        description: "Pioneers high-fidelity physics simulation; AGX Dynamics enables machine autonomy, digital twins, and real-time physics for a wide range of industries.",
+        website: "https://https://www.algoryx.se",
+        techScore: 3,
+        focusScore: 5,
+        domains: ['MM', 'MI', 'CSI'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: ['Inven Capital', 'Almi Invest', 'Industrifonden']
+    },
+    {
+        name: "DeepSim, Inc.",
+        description: "AI-driven multi-scale physics simulations platform offering rapid, scalable solutions for engineering design using custom GPU-accelerated pipelines.",
+        website: "https://https://www.deepsim.io",
+        techScore: 3,
+        focusScore: 5,
+        domains: ['MM', 'CSI', 'MI'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    },
+    {
+        name: "Siml.ai (DimensionLab)",
+        description: "Software platform for AI-based numerical simulation, enabling easy creation, training, and deployment of high-performance physics simulators.",
+        website: "https://https://dimensionlab.org/products/simlai",
+        techScore: 5,
+        focusScore: 6,
+        domains: ['MM', 'CSI', 'CDP'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    },
+    {
+        name: "Akselos",
+        description: "Provides Structural Performance Management software using advanced physics-based simulations for real-time digital twins and asset management.",
+        website: "https://https://www.akselos.com",
+        techScore: 5,
+        focusScore: 6,
+        domains: ['MM', 'MI', 'CSI'],
+        totalRaised: 106.0,
+        lastRound: 75.0,
+        valuation: null,
+        investors: ['Temasek', 'Digital Colony', 'Allianz X']
+    },
+    {
+        name: "Kuano",
+        description: "Uses AI and quantum computing to create molecular design solutions, accelerating drug and enzyme inhibitor discovery.",
+        website: "https://https://www.kuano.ai",
+        techScore: 3,
+        focusScore: 7,
+        domains: ['MC', 'LSB', 'CSI'],
+        totalRaised: 3.6,
+        lastRound: 3.6,
+        valuation: null,
+        investors: ['Inventure', 'Superhero Capital']
+    },
+    {
+        name: "Physna",
+        description: "SaaS platform leveraging geometric search and 3D AI to unlock the value of 3D models for manufacturing, AR/VR, and digital asset management.",
+        website: "https://physna.com",
+        techScore: 6,
+        focusScore: 8,
+        domains: ['MM', 'CDP', 'MI'],
+        totalRaised: 85.0,
+        lastRound: null,
+        valuation: 336.0,
+        investors: ['Tiger Global Management', 'Sequoia Capital', 'GV (Google Ventures)', 'Drive Capital', 'Next Play Ventures']
+    },
+    {
+        name: "Lila Sciences",
+        description: "Scientific superintelligence platform with autonomous labs, applying AI to entirely automate and scale experimentation in life, chemical, and materials sciences.",
+        website: "https://lila.ai",
+        techScore: 2,
+        focusScore: 9,
+        domains: ['LSB', 'MC', 'CDP'],
+        totalRaised: null,
+        lastRound: 200.0,
+        valuation: null,
+        investors: ['Flagship Pioneering (lead)', 'General Catalyst', 'March Capital', 'ARK Venture Fund', 'others']
+    },
+    {
+        name: "Covariant",
+        description: "Builds universal AI enabling robots to perceive, reason, and handle objects autonomously—applied in industries needing automated manipulation and logistics.",
+        website: "https://covariant.ai",
+        techScore: 7,
+        focusScore: 6,
+        domains: ['MI', 'EE', 'CDP'],
+        totalRaised: null,
+        lastRound: 150.0,
+        valuation: 1200.0,
+        investors: ['Tiger Global', 'Bessemer Venture Partners', 'Founders Fund', 'DFJ Growth']
+    },
+    {
+        name: "Geminus AI",
+        description: "Provides real-time intelligence and digital twins for industrial systems—integrates physics, data, and computation to optimize large-scale operations.",
+        website: "https://geminus.ai",
+        techScore: 5,
+        focusScore: 7,
+        domains: ['MI', 'MM', 'CSI', 'CDP'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    },
+    {
+        name: "Rahko",
+        description: "Quantum machine learning company developing advanced modeling for drug and material discovery, acquired by Odyssey Therapeutics.",
+        website: "https://rahko.ai",
+        techScore: 2,
+        focusScore: 8,
+        domains: ['MC', 'LSB', 'CSI'],
+        totalRaised: 19.0,
+        lastRound: null,
+        valuation: null,
+        investors: ['IQ Capital', 'Parkwalk Advisors', 'Amadeus Capital Partners']
+    },
+    {
+        name: "Optineura AI",
+        description: "Speeds up hardware development by using ML simulation surrogates to reduce CAE simulation time from hours to seconds, supporting diverse data formats.",
+        website: "https://https://www.optineura.com/",
+        techScore: 3,
+        focusScore: 5,
+        domains: ['MM', 'MI', 'CSI'],
+        totalRaised: 4.0,
+        lastRound: 4.0,
+        valuation: null,
+        investors: ['R42 Group', 'Bioinformatics Ventures']
+    },
+    {
+        name: "Camber / CamberCloud",
+        description: "Scientific computing cloud platform offering scalable APIs and containerized HPC/AI workflows for rapid research and simulation deployment.",
+        website: "https://https://www.cambercloud.com/",
+        techScore: 8,
+        focusScore: 9,
+        domains: ['CSI', 'CDP'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    },
+    {
+        name: "Emmi AI",
+        description: "AI-driven platform accelerating industrial simulations, combining deep learning and domain expertise to rapidly solve previously intractable physics problems.",
+        website: "https://https://www.emmi.ai/",
+        techScore: 4,
+        focusScore: 6,
+        domains: ['MM', 'MI', 'CSI'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    },
+    {
+        name: "Rowan Scientific Corp.",
+        description: "Develops computational tools to accelerate chemical R&D with simulation and molecular design platforms for scientists.",
+        website: "https://https://www.rowansci.com/",
+        techScore: 4,
+        focusScore: 6,
+        domains: ['MC', 'LSB', 'CSI'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    },
+    {
+        name: "Vsim",
+        description: "Multi-physics simulation engine using advanced ML models for real-time, scalable and accurate simulations across AI, robotics, and VFX industries.",
+        website: "https://https://www.vsim.foundation/",
+        techScore: 3,
+        focusScore: 5,
+        domains: ['EE', 'MM', 'CSI'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    },
+    {
+        name: "Synopsys",
+        description: "Global leader in electronic design automation (EDA) and semiconductor IP, providing tools and IP for IC/SoC design, security, and AI chip development.",
+        website: "https://https://www.synopsys.com",
+        techScore: 9,
+        focusScore: 7,
+        domains: ['EE', 'CSI', 'CDP'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: 91920,
+        investors: ['Institutional investors', 'mutual funds']
+    },
+    {
+        name: "Dassault Systèmes",
+        description: "French software giant specializing in 3D design, digital mock-up, and product lifecycle management (PLM) solutions for diverse industries.",
+        website: "https://https://www.3ds.com",
+        techScore: 9,
+        focusScore: 8,
+        domains: ['CDP', 'MM', 'MI', 'MC', 'CSI', 'EE', 'LSB'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: 49000,
+        investors: ['Institutional', 'French government']
+    },
+    {
+        name: "Siemens Digital Industries",
+        description: "Offers 2D/3D PLM software and industrial automation tools for engineering, manufacturing, and digitalization, headquartered in Plano, Texas.",
+        website: "https://https://www.sw.siemens.com/en-US/",
+        techScore: 8,
+        focusScore: 7,
+        domains: ['MI', 'MM', 'CSI', 'EE', 'CDP', 'MC', 'LSB'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: 206000,
+        investors: ['Owned by Siemens AG (public)']
+    },
+    {
+        name: "Altair Engineering Inc",
+        description: "Delivers software and cloud solutions for simulation, HPC, data analytics, and AI, optimizing design and innovation across industries.",
+        website: "https://https://www.altair.com",
+        techScore: 8,
+        focusScore: 6,
+        domains: ['MM', 'MI', 'CSI', 'EE', 'CDP'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: 9630,
+        investors: ['Institutional', 'mutual funds; merger in progress']
+    },
+    {
+        name: "Autodesk",
+        description: "Global software corporation known for AutoCAD and Revit, serving architecture, engineering, construction, and manufacturing with 3D design and modeling tools.",
+        website: "https://https://www.autodesk.com",
+        techScore: 9,
+        focusScore: 7,
+        domains: ['MM', 'MI', 'CSI', 'CDP'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: 65000,
+        investors: ['Institutional investors']
+    },
+    {
+        name: "Diode Computers",
+        description: "AI-driven PCB design platform that generates PCB layouts from code to dramatically speed up board creation.",
+        website: "https://www.diode.computer",
+        techScore: null,        // Please populate existing scores
+        focusScore: null,       // Please populate existing scores
+        domains: ["EE", "CDP"],
+        techScore: 7,         // Uses generative AI to automate PCB layout from textual specs; strong ML integration, moderate infra depth
+        focusScore: 9,  
+        totalRaised: 14.0,
+        lastRound: 11.4,
+        valuation: null,
+        investors: ["Andreessen Horowitz", "Caffeinated Capital", "BoxGroup", "Y Combinator", "Soma Capital", "Vento"]
+    },
+    {
+        name: "Segmantic AI",
+        description: "Enterprise intelligence and data fusion platform that integrates internal and external enterprise data for decision support.",
+        website: "https://www.semantic-ai.com",
+        techScore: null,        // Please populate existing scores
+        focusScore: null,       // Please populate existing scores
+        domains: ["CSI", "CDP"],
+        techScore: 4,         // Uses generative AI to automate PCB layout from textual specs; strong ML integration, moderate infra depth
+        focusScore: 3,  
+        totalRaised: 9.62,
+        lastRound: 4.4,
+        valuation: null,
+        investors: ["Osage Venture Partners", "InState Partners"]
+    },
+    {
+        name: "COMSOL",
+        description: "Developer of COMSOL Multiphysics®, finite-element modeling software for engineering, enabling multiphysics simulation and easy creation of simulation apps",
+        website: "https://https://www.comsol.com",
+        techScore: 7,
+        focusScore: 6,
+        domains: ['MM', 'MC', 'CSI', 'CDP'],
+        totalRaised: null,
+        lastRound: null,
+        valuation: null,
+        investors: []
+    }
+        ];
+
+        function initializeCompanies() {
+            const framework = document.getElementById('framework');
+    
+            const valuations = companies.map(c => c.valuation).filter(v => v > 0);
+            const minValuation = Math.min(...valuations);
+            const maxValuation = Math.max(...valuations);
+            
+            companies.forEach(company => {
+                // Move the domain expansion INSIDE the loop for each company:
+                const fullDomains = expandDomains(company.domains);
+                const firstDomainCSS = domainToCSS(fullDomains[0]);
+
+                console.log(company.name + ':', 'domain-' + firstDomainCSS, fullDomains[0]); // DEBUG
+                
+                const companyElement = document.createElement('div');
+                companyElement.className = 'company domain-' + firstDomainCSS;
+
+                console.log('Element classes:', companyElement.className); // DEBUG
+
+                companyElement.style.cursor = 'pointer';
+                
+                // Format valuation
+                let valuationText = '';
+                if (company.valuation >= 1000) {
+                    valuationText = '$' + (company.valuation / 1000).toFixed(1) + 'B';
+                } else if (company.valuation > 0) {
+                    valuationText = '$' + company.valuation + 'M';
+                } else {
+                    valuationText = 'Private';
+                }
+                
+                // Create name and valuation elements
+                const nameDiv = document.createElement('div');
+                nameDiv.className = 'company-name';
+                nameDiv.textContent = company.name;
+                
+                const valuationDiv = document.createElement('div');
+                valuationDiv.className = 'company-valuation';
+                valuationDiv.textContent = valuationText;
+                
+                companyElement.appendChild(nameDiv);
+                companyElement.appendChild(valuationDiv);
+                
+                // Size based on valuation
+                let size = 60;
+                if (company.valuation > 0) {
+                    const logMin = Math.log(minValuation);
+                    const logMax = Math.log(maxValuation);
+                    const logVal = Math.log(company.valuation);
+                    size = 30 + ((logVal - logMin) / (logMax - logMin)) * 90;
+                }
+                
+                companyElement.style.width = size + 'px';
+                companyElement.style.height = size + 'px';
+                companyElement.style.fontSize = Math.max(0.6, Math.min(0.9, size / 80)) + 'rem';
+                
+                // Position
+                const x = ((company.techScore - 1) / 9) * (900 - 100) + 50 - (size / 2);
+                const y = ((10 - company.focusScore) / 9) * (700 - 100) + 50 - (size / 2);
+                
+                companyElement.style.left = x + 'px';
+                companyElement.style.top = y + 'px';
+                
+                companyElement.addEventListener('click', function() {
+                    showCompanyInfo(company);
+                });
+                
+                framework.appendChild(companyElement);
+            });
+
+            setTimeout(() => {
+                adjustPositionsForCollisions();
+            }, 100);
+        }
+
+        function adjustPositionsForCollisions() {
+            const companyElements = document.querySelectorAll('.company');
+            const positions = [];
+            
+            companyElements.forEach((element, index) => {
+                const size = parseFloat(element.style.width);
+                positions.push({
+                    element: element,
+                    x: parseFloat(element.style.left),
+                    y: parseFloat(element.style.top),
+                    size: size,
+                    index: index
+                });
+            });
+            
+            // Add small random jitter to break exact overlaps
+            positions.forEach(pos => {
+                pos.x += (Math.random() - 0.5) * 2;
+                pos.y += (Math.random() - 0.5) * 2;
+            });
+            
+            // Multiple passes to resolve all collisions
+            for (let pass = 0; pass < 10; pass++) {
+                let hadCollision = false;
+                
+                for (let i = 0; i < positions.length; i++) {
+                    for (let j = i + 1; j < positions.length; j++) {
+                        const pos1 = positions[i];
+                        const pos2 = positions[j];
+                        
+                        const dx = pos1.x - pos2.x;
+                        const dy = pos1.y - pos2.y;
+                        const distance = Math.sqrt(dx * dx + dy * dy);
+                        const minDistance = (pos1.size + pos2.size) / 2 + 8;
+                        
+                        if (distance < minDistance) {
+                            hadCollision = true;
+                            
+                            if (distance < 0.1) {
+                                const angle = Math.random() * Math.PI * 2;
+                                const moveDistance = minDistance / 2;
+                                pos1.x += Math.cos(angle) * moveDistance;
+                                pos1.y += Math.sin(angle) * moveDistance;
+                                pos2.x -= Math.cos(angle) * moveDistance;
+                                pos2.y -= Math.sin(angle) * moveDistance;
+                            } else {
+                                const angle = Math.atan2(dy, dx);
+                                const moveDistance = (minDistance - distance) / 2 + 2;
+                                
+                                pos1.x += Math.cos(angle) * moveDistance;
+                                pos1.y += Math.sin(angle) * moveDistance;
+                                pos2.x -= Math.cos(angle) * moveDistance;
+                                pos2.y -= Math.sin(angle) * moveDistance;
+                            }
+                        }
+                    }
+                }
+                
+                positions.forEach(pos => {
+                    pos.x = Math.max(pos.size/2, Math.min(900 - pos.size/2, pos.x));
+                    pos.y = Math.max(pos.size/2, Math.min(700 - pos.size/2, pos.y));
+                });
+                
+                if (!hadCollision) break;
+            }
+            
+            positions.forEach(pos => {
+                pos.element.style.left = pos.x + 'px';
+                pos.element.style.top = pos.y + 'px';
+            });
+        }
+
+        function showCompanyInfo(company) {
+            const panel = document.getElementById('infoPanel');
+            
+            document.getElementById('infoTitle').textContent = company.name;
+            document.getElementById('infoDescription').textContent = company.description;
+            document.getElementById('infoWebsite').href = company.website;
+            document.getElementById('infoWebsite').textContent = company.website;
+            
+            
+            const techPosition = ((company.techScore - 1) / 9) * 100;
+            const focusPosition = ((company.focusScore - 1) / 9) * 100;
+
+            // Account for circle width (8px radius = 50% of 16px width)
+            document.getElementById('techIndicator').style.left = `calc(${techPosition}% - 8px)`;
+            document.getElementById('focusIndicator').style.left = `calc(${focusPosition}% - 8px)`;
+            // NEW domain handling - replace the old section entirely:
+            const fullDomains = expandDomains(company.domains);
+            const domainsContainer = document.getElementById('infoDomains');
+            domainsContainer.innerHTML = '';
+            fullDomains.forEach(domain => {
+                const tag = document.createElement('span');
+                const cssClass = domainToCSS(domain);
+                tag.className = 'domain-tag tag-' + cssClass;
+                tag.textContent = domain; // Shows full name in UI
+                domainsContainer.appendChild(tag);
+            });
+            
+            if (company.valuation >= 1000) {
+                document.getElementById('valuation').textContent = '$' + (company.valuation / 1000).toFixed(1) + 'B';
+            } else {
+                document.getElementById('valuation').textContent = '$' + company.valuation + 'M';
+            }
+            
+            document.getElementById('totalRaised').textContent = '$' + company.totalRaised + 'M';
+            document.getElementById('lastRound').textContent = '$' + company.lastRound + 'M';
+            const investorsText = company.investors ? company.investors.join(', ') : 'Not disclosed';
+            document.getElementById('investors').textContent = investorsText;
+            
+            panel.classList.add('visible');
+        }
+
+        function closeInfoPanel() {
+            document.getElementById('infoPanel').classList.remove('visible');
+        }
+
+        function showLegend() {
+            const legend = document.getElementById('legendPopup');
+            legend.classList.toggle('visible');
+        }
+
+        function hideLegend() {
+            document.getElementById('legendPopup').classList.remove('visible');
+        }
+
+        function showTooltip(domain) {
+        // Hide all other tooltips first
+        document.querySelectorAll('.info-tooltip').forEach(tooltip => {
+            tooltip.classList.remove('visible');
+        });
+        
+        // Show the clicked tooltip
+        const tooltip = document.getElementById(`${domain.toLowerCase()}Tooltip`);
+        if (tooltip) {
+            tooltip.classList.add('visible');
+        }
+        }
+
+        // 2. Add event listeners to hide tooltips when clicking elsewhere (add this to your existing DOMContentLoaded section):
+        document.addEventListener('click', function(e) {
+            // Hide tooltips when clicking outside
+            if (!e.target.closest('.info-icon') && !e.target.closest('.info-tooltip')) {
+                document.querySelectorAll('.info-tooltip').forEach(tooltip => {
+                    tooltip.classList.remove('visible');
+                });
+            }
+            
+            // Existing panel close functionality
+            if (!e.target.closest('.info-panel') && !e.target.closest('.company')) {
+                closeInfoPanel();
+            }
+        });
+
+        function hideTooltip(domain) {
+            const tooltip = document.getElementById(`${domain.toLowerCase()}Tooltip`);
+            tooltip.classList.remove('visible');
+        }
+
+        document.addEventListener('DOMContentLoaded', initializeCompanies);
+        
+        document.addEventListener('click', function(e) {
+            if (!e.target.closest('.info-panel') && !e.target.closest('.company')) {
+                closeInfoPanel();
+            }
+        });
+    </script>
+</body>
+</html>
