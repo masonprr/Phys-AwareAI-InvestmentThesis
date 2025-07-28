@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics-Aware AI Investment Thesis</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            line-height: 1.6;
+            color: #333;
+            background: #fafafa;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .header h1 {
+            font-size: 3rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .header p {
+            font-size: 1.2rem;
+            opacity: 0.9;
+            max-width: 800px;
+            margin: 0 auto;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 2rem;
+        }
+
+        .section {
+            background: white;
+            margin: 2rem 0;
+            padding: 3rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+
+        .section h2 {
+            font-size: 2.2rem;
+            margin-bottom: 1.5rem;
+            color: #2c3e50;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 0.5rem;
+        }
+
+        .section h3 {
+            font-size: 1.5rem;
+            margin: 2rem 0 1rem 0;
+            color: #34495e;
+        }
+
+        .section p {
+            margin-bottom: 1.5rem;
+            font-size: 1.1rem;
+            line-height: 1.7;
+        }
+
+        .section ul {
+            margin: 1.5rem 0;
+            padding-left: 2rem;
+        }
+
+        .section li {
+            margin-bottom: 0.8rem;
+            font-size: 1.1rem;
+        }
+
+        .highlight-box {
+            background: linear-gradient(135deg, #f8f9ff, #e8f0ff);
+            border-left: 4px solid #667eea;
+            padding: 2rem;
+            margin: 2rem 0;
+            border-radius: 8px;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin: 2rem 0;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            padding: 2rem;
+            border-radius: 12px;
+            text-align: center;
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .stat-number {
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-label {
+            font-size: 1rem;
+            opacity: 0.9;
+        }
+
+        .landscape-container {
+            background: white;
+            padding: 2rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin: 2rem 0;
+            min-height: 800px;
+            position: relative;
+        }
+
+        .landscape-header {
+            text-align: center;
+            margin-bottom: 2rem;
+        }
+
+        .landscape-header h2 {
+            font-size: 2.2rem;
+            color: #2c3e50;
+            margin-bottom: 1rem;
+        }
+
+        .landscape-header p {
+            font-size: 1.1rem;
+            color: #666;
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .iframe-placeholder {
+            width: 100%;
+            height: 800px;
+            border: 2px dashed #ddd;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #f8f9fa;
+            color: #666;
+            font-size: 1.1rem;
+            text-align: center;
+        }
+
+        .two-column {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 3rem;
+            margin: 2rem 0;
+        }
+
+        .investment-framework {
+            background: linear-gradient(135deg, #f8f9ff, #e8f0ff);
+            padding: 2rem;
+            border-radius: 12px;
+            border: 1px solid #e0e8ff;
+        }
+
+        .framework-item {
+            margin-bottom: 1.5rem;
+            padding-bottom: 1.5rem;
+            border-bottom: 1px solid #e0e8ff;
+        }
+
+        .framework-item:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+
+        .framework-title {
+            font-weight: 600;
+            color: #667eea;
+            margin-bottom: 0.5rem;
+        }
+
+        .cta-section {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            text-align: center;
+            padding: 4rem 2rem;
+            border-radius: 12px;
+            margin: 3rem 0;
+        }
+
+        .cta-section h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: white;
+            border: none;
+        }
+
+        .cta-button {
+            display: inline-block;
+            background: white;
+            color: #667eea;
+            padding: 1rem 2rem;
+            text-decoration: none;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1.1rem;
+            margin-top: 1rem;
+            transition: transform 0.2s ease;
+        }
+
+        .cta-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+        }
+
+        .footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 2rem;
+            margin-top: 3rem;
+        }
+
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2rem;
+            }
+            
+            .section {
+                padding: 2rem 1.5rem;
+                margin: 1rem 0;
+            }
+            
+            .two-column {
+                grid-template-columns: 1fr;
+                gap: 2rem;
+            }
+            
+            .container {
+                padding: 0 1rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <h1>Physics-Aware AI Investment Thesis</h1>
+        <p>Transforming Science and Engineering Through Artificial Intelligence</p>
+    </header>
+
+    <main class="container">
+        <section class="section">
+            <h2>Executive Summary</h2>
+            <div class="highlight-box">
+                <p><strong>Investment Opportunity:</strong> Physics-aware AI represents a $50B+ market opportunity at the intersection of artificial intelligence, scientific computing, and industrial R&D. This emerging category promises to revolutionize how we design, simulate, and optimize physical systems across industries.</p>
+            </div>
+            
+            <p>Traditional physics simulation has been the backbone of engineering and scientific discovery for decades, but it faces fundamental limitations: computational expense, time-to-insight delays, and accessibility barriers. Physics-aware AI solves these challenges by combining domain expertise with machine learning to create faster, more accessible, and often more accurate simulation and design tools.</p>
+
+            <div class="stats-grid">
+                <div class="stat-card">
+                    <div class="stat-number">$50B+</div>
+                    <div class="stat-label">Total Addressable Market</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">1000x</div>
+                    <div class="stat-label">Speed Improvements</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">40+</div>
+                    <div class="stat-label">Active Startups</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-number">$2B+</div>
+                    <div class="stat-label">Capital Deployed</div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Market Dynamics</h2>
+            
+            <h3>The Traditional Simulation Market</h3>
+            <p>The global computer-aided engineering (CAE) market, dominated by established players like ANSYS, Dassault Systèmes, and Siemens, represents approximately $8-10B annually. However, this understates the true opportunity as it excludes:</p>
+            <ul>
+                <li>In-house simulation teams at large enterprises</li>
+                <li>Scientific computing and R&D applications</li>
+                <li>Emerging use cases enabled by AI acceleration</li>
+                <li>New industries adopting simulation for the first time</li>
+            </ul>
+
+            <h3>AI-Driven Market Expansion</h3>
+            <p>Physics-aware AI doesn't just compete with traditional simulation—it expands the addressable market by:</p>
+            <ul>
+                <li><strong>Democratizing access:</strong> Making simulation accessible to non-experts</li>
+                <li><strong>Enabling real-time applications:</strong> Interactive design and optimization</li>
+                <li><strong>Creating new use cases:</strong> Digital twins, autonomous systems, and generative design</li>
+                <li><strong>Reducing barriers:</strong> Lower computational requirements and faster time-to-insight</li>
+            </ul>
+        </section>
+
+        <div class="landscape-container">
+            <div class="landscape-header">
+                <h2>Company Landscape Analysis</h2>
+                <p>Interactive mapping of 40+ companies across the physics-aware AI ecosystem, positioned by technical approach and go-to-market strategy.</p>
+            </div>
+            
+            <!-- Replace this placeholder with your actual iframe -->
+            <div class="iframe-placeholder">
+                <div>
+                    <p><strong>Embed your interactive landscape here</strong></p>
+                    <p>Replace this section with:</p>
+                    <code>&lt;iframe src="your-landscape.html" width="100%" height="800px" frameborder="0"&gt;&lt;/iframe&gt;</code>
+                </div>
+            </div>
+        </div>
+
+        <section class="section">
+            <h2>Investment Framework</h2>
+            
+            <div class="two-column">
+                <div>
+                    <h3>Key Success Factors</h3>
+                    <ul>
+                        <li><strong>Technical Differentiation:</strong> Novel algorithms, proprietary data, or unique physics insights</li>
+                        <li><strong>Domain Expertise:</strong> Deep understanding of target verticals and physics</li>
+                        <li><strong>Go-to-Market Strategy:</strong> Clear path to customer acquisition and retention</li>
+                        <li><strong>Scalability:</strong> Platform approach that can expand across domains</li>
+                        <li><strong>Defensibility:</strong> Network effects, data moats, or switching costs</li>
+                    </ul>
+                </div>
+                
+                <div class="investment-framework">
+                    <div class="framework-item">
+                        <div class="framework-title">Research-Heavy Plays</div>
+                        <p>Companies building novel algorithms and solvers. High technical risk, high reward potential.</p>
+                    </div>
+                    <div class="framework-item">
+                        <div class="framework-title">Platform Strategies</div>
+                        <p>Focused on orchestration, accessibility, and horizontal expansion across domains.</p>
+                    </div>
+                    <div class="framework-item">
+                        <div class="framework-title">Data-Centric Approaches</div>
+                        <p>Leveraging proprietary datasets or domain knowledge for competitive advantage.</p>
+                    </div>
+                    <div class="framework-item">
+                        <div class="framework-title">Vertical Solutions</div>
+                        <p>Deep focus on specific industries with tailored physics-aware AI solutions.</p>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Investment Opportunities</h2>
+            
+            <h3>Early-Stage Opportunities (Seed to Series A)</h3>
+            <p>The majority of physics-aware AI companies are in early stages, presenting opportunities for significant value creation. Key areas of focus:</p>
+            <ul>
+                <li><strong>Materials Discovery:</strong> AI-driven molecular simulation and materials design</li>
+                <li><strong>Fluid Dynamics:</strong> Next-generation CFD with ML acceleration</li>
+                <li><strong>Structural Engineering:</strong> Real-time FEA and design optimization</li>
+                <li><strong>Digital Twins:</strong> Physics-aware models for industrial operations</li>
+            </ul>
+
+            <h3>Growth-Stage Investments (Series B+)</h3>
+            <p>Select companies demonstrating product-market fit and revenue traction:</p>
+            <ul>
+                <li>Platform players expanding across multiple physics domains</li>
+                <li>Vertical solutions with strong customer adoption</li>
+                <li>Infrastructure plays enabling the broader ecosystem</li>
+            </ul>
+
+            <div class="highlight-box">
+                <p><strong>Investment Thesis:</strong> We believe the physics-aware AI market is at an inflection point. Advances in AI/ML, increasing computational power, and growing demand for faster R&D cycles are converging to create a massive opportunity. Early movers with strong technical differentiation and domain expertise will capture disproportionate value.</p>
+            </div>
+        </section>
+
+        <section class="section">
+            <h2>Risks and Considerations</h2>
+            
+            <h3>Technical Risks</h3>
+            <ul>
+                <li>Physics accuracy vs. speed tradeoffs</li>
+                <li>Generalization across different problem domains</li>
+                <li>Integration with existing engineering workflows</li>
+            </ul>
+
+            <h3>Market Risks</h3>
+            <ul>
+                <li>Conservative adoption in traditional engineering organizations</li>
+                <li>Competition from established CAE vendors</li>
+                <li>Regulatory requirements in safety-critical applications</li>
+            </ul>
+
+            <h3>Execution Risks</h3>
+            <ul>
+                <li>Talent acquisition in specialized domains</li>
+                <li>Long sales cycles in enterprise markets</li>
+                <li>Balancing research innovation with commercial viability</li>
+            </ul>
+        </section>
+
+        <div class="cta-section">
+            <h2>Get In Touch</h2>
+            <p>Interested in discussing physics-aware AI investment opportunities?</p>
+            <a href="mailto:your-email@example.com" class="cta-button">Contact Me</a>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p>&copy; 2024 Physics-Aware AI Investment Thesis. Built for GitHub Pages.</p>
+    </footer>
+</body>
+</html>
